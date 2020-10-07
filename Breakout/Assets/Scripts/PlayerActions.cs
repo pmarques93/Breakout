@@ -8,6 +8,7 @@ public class PlayerActions : MonoBehaviour
 {
     // Inspector Variables
     [SerializeField] Transform crosshair;
+    [SerializeField] GameObject arrowPrefab;
 
     // Actions
     public bool AimHoldKeyPressed { get; set; }
@@ -16,22 +17,28 @@ public class PlayerActions : MonoBehaviour
     bool bowMaxPull;
     bool fire;
 
+    // Stuff
+    GameObject firedArrowsGameObject;
+    GameObject arrowFired;
 
     // Components
     Animator anim;
+    
 
     // Start is called before the first frame update
+    private void Awake()
+    {
+        firedArrowsGameObject = new GameObject();
+        firedArrowsGameObject.tag = "ArrowsFiredParent";
+
+    }
     private void Start()
     {
         anim = GetComponent<Animator>();
-
+        
         WeaponEquiped = true;
     }
 
-    private void FixedUpdate()
-    {
-        
-    }
 
     private void Update()
     {
@@ -77,5 +84,12 @@ public class PlayerActions : MonoBehaviour
     public void FireFalseOnAnimation()
     {
         fire = false;
+    }
+
+    public void InstantiateArrowOnAnimation()
+    {
+        arrowFired = Instantiate(arrowPrefab, transform.position, crosshair.transform.rotation) as GameObject;
+        arrowFired.transform.parent = firedArrowsGameObject.transform;
+        arrowFired.GetComponent<Arrow>().Direction = crosshair.transform.position - transform.position;
     }
 }
