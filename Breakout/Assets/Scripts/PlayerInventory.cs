@@ -42,6 +42,16 @@ public class PlayerInventory : MonoBehaviour
         EquipedWeapon = ItemList.unarmed;
 
 
+        inventory.Add(new Bow(1));
+        EquipWeapon(ItemList.bow1);
+        inventory.Add(new Arrow());
+        inventory.Add(new Arrow());
+        inventory.Add(new Arrow());
+        inventory.Add(new Arrow());
+        inventory.Add(new Arrow());
+
+
+
         // inventory.Add(new something()); example
         // EquipWeapon(ItemList.something)
 
@@ -142,7 +152,7 @@ public class PlayerInventory : MonoBehaviour
     {
         if (collision.gameObject.layer == 9)
         {
-            if (collision.GetComponent<Arrow>().arrowHitTarget)
+            if (collision.GetComponent<Arrow>().arrowHitObstacle || collision.GetComponent<Arrow>().arrowHitEnemy)
             {
                 inventory.Add(collision.GetComponent<Arrow>());
                 Destroy(collision.gameObject);

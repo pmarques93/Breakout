@@ -16,17 +16,23 @@ public class Arrow : MonoBehaviour, IInventoryItem
 
     // Direction
     public Vector3 Direction { get; set; }
-   
+
+    // Spawn position
+    Vector3 mySpawnPosition;
 
     // Target and contactpoint
-    public bool arrowHitTarget { get; set; }
-
-
+    ZombieMovement zombie;
+    Vector3 contactPointDifference;
+    public bool arrowHitObstacle    { get; set; }
+    public bool arrowHitEnemy       { get; set; }
     ContactPoint2D contactPoint;
+
+    
 
     // Components
     Rigidbody2D rb;
     SpriteRenderer spriteRender;
+
 
     public Arrow ()
     {
@@ -39,19 +45,25 @@ public class Arrow : MonoBehaviour, IInventoryItem
     {
         rb = GetComponent<Rigidbody2D>();
         spriteRender = GetComponent<SpriteRenderer>();
+        
     }
 
     private void Start()
     {
         rb.velocity = Direction * Speed;
-        arrowHitTarget = false;
-
+        arrowHitObstacle = false;
+        arrowHitEnemy = false;
+        mySpawnPosition = transform.position;
     }
 
     // Update is called once per frame
     void Update()
     {
-        if (arrowHitTarget)
+        if (arrowHitEnemy)
+        {
+            transform.position = zombie.transform.position + contactPointDifference;
+        }
+        else if (arrowHitObstacle)
         {
             transform.position = contactPoint.point;
         }
@@ -59,34 +71,39 @@ public class Arrow : MonoBehaviour, IInventoryItem
 
     private void OnCollisionEnter2D(Collision2D collision)
     {
-        if (collision.gameObject.layer == 10)   // enemy
+        contactPoint = collision.contacts[0];
+
+        if (collision.gameObject.layer == 12)   // enemy
         {
             // Get enemy Rb
-
+            zombie = collision.gameObject.GetComponent<ZombieMovement>();
             // Damage the enemy 
             // or
             // Critical Chance
 
             // Push the enemy
+            Vector2 forceDirection = transform.position - mySpawnPosition;
+            rb.AddForce(forceDirection);
 
-            // Destroy(gameObject);
+            Instantiate(blowingParticles, contactPoint.point, Quaternion.identity);
+
+            arrowHitEnemy = true;
+            contactPointDifference = contactPoint.point - new Vector2(zombie.transform.position.x, zombie.transform.position.y);
         }
-
         
-        spriteRender.sprite = stuckArrowImage;
-        rb.velocity = Vector3.zero;
-        GetComponent<CapsuleCollider2D>().isTrigger = true;
-        arrowHitTarget = true;
-        gameObject.layer = 9;
-
-        contactPoint = collision.contacts[0];
+            spriteRender.sprite = stuckArrowImage;
+            rb.velocity = Vector3.zero;
+            GetComponent<CapsuleCollider2D>().isTrigger = true;
+            arrowHitObstacle = true;
+            gameObject.layer = 9;
+        
     }
 
     private void OnTriggerEnter2D(Collider2D collision)
     {
         if (collision.gameObject.layer == 9)
         {
-            if (collision.GetComponent<Arrow>().arrowHitTarget)
+            if (collision.GetComponent<Arrow>().arrowHitObstacle) // || collision.GetComponent<Arrow>().arrowHitEnemy
             {
                 Instantiate(blowingParticles, collision.transform.position, Quaternion.identity);
                 Destroy(collision.gameObject);

@@ -10,8 +10,6 @@ public class PlayerActions : MonoBehaviour
     [SerializeField] Transform  crosshair;  // Aiming crosshair
     [SerializeField] GameObject arrowPrefab;
 
-    // Attack
-    public bool Attack              { get; set; }   // Action that starts the attack animation
 
     // Attack Delay
     bool    startDelayCount;
@@ -62,7 +60,7 @@ public class PlayerActions : MonoBehaviour
                     if (HasAmmunitionCheck() > 0)
                     {
                         // Attacks and sets delay
-                        Attack = true;
+                        anim.SetTrigger("Attack");
                         startDelayCount = true;
                     }
                 }
@@ -100,7 +98,6 @@ public class PlayerActions : MonoBehaviour
     {
         anim.SetFloat("AttackDelay", delay);
         anim.SetBool("PrepareWeapon", controls.AimHoldKeyPressed);
-        anim.SetBool("Attack", Attack);
         anim.SetInteger("HasAmmunition", HasAmmunitionCheck());
     }
 
@@ -114,29 +111,26 @@ public class PlayerActions : MonoBehaviour
     {
         controls.WeaponReady = false;
     }
-    // Controls weapon fire with animation event
-    public void FireFalseOnAnimation()
-    {
-        Attack = false;
-    }
+
     // Controls the instantiation of ammunition with animation event
     public void InstantiateArrowOnAnimation()
     {
         arrowFired = Instantiate(arrowPrefab, transform.position, crosshair.transform.rotation) as GameObject;
 
         // Removes an arrow
-        int numberOfArrowsRemoved = 0;
+        bool arrowRemoved = false;
         for (int i = 0; i < inventory.inventory.Count; i++)
         {
-            if (numberOfArrowsRemoved == 0)
+            if (arrowRemoved == false)
             {
                 if (inventory.inventory[i].ItemName == ItemList.arrow)
                 {
                     inventory.inventory.Remove(inventory.inventory[i]);
-                    numberOfArrowsRemoved++;
+                    arrowRemoved = true;
                 }
             }
         }
+
 
         arrowFired.transform.parent = firedArrowsGameObject.transform;
         arrowFired.GetComponent<Arrow>().Direction = crosshair.transform.position - transform.position;
