@@ -10,11 +10,10 @@ GameObject:
   m_Component:
   - component: {fileID: 437889285148865566}
   - component: {fileID: 7920913353655812062}
-  - component: {fileID: 3430785677001672262}
   - component: {fileID: -4143019965740138044}
   - component: {fileID: 3207744222959620108}
-  m_Layer: 8
-  m_Name: Arrow
+  m_Layer: 10
+  m_Name: FloorPickableArrow
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -84,21 +83,6 @@ SpriteRenderer:
   m_WasSpriteAssigned: 1
   m_MaskInteraction: 0
   m_SpriteSortPoint: 0
---- !u!114 &3430785677001672262
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1507784255055337278}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 6c21a32c6bd136d4ab7edf32345e0125, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  stuckArrowImage: {fileID: 21300000, guid: ddde0e4f8c5820d4cb0d4ae414aec7b0, type: 3}
-  blowingParticles: {fileID: 6458033328621133433, guid: cded5c908c28f4247b2e7bfa9e913100,
-    type: 3}
 --- !u!50 &-4143019965740138044
 Rigidbody2D:
   serializedVersion: 4

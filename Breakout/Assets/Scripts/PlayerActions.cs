@@ -7,15 +7,17 @@ using UnityEngine.UI;
 public class PlayerActions : MonoBehaviour
 {
     // Inspector Variables
-    [SerializeField] Transform crosshair;
+    [SerializeField] Transform  crosshair;  // Aiming crosshair
     [SerializeField] GameObject arrowPrefab;
 
-    // Actions
-    public bool AimHoldKeyPressed { get; set; }
-    public bool WeaponEquiped { get; set; }
-    bool fireBowKeyPressed;
-    bool bowMaxPull;
-    bool fire;
+    // Attack
+    public bool Attack              { get; set; }   // Action that starts the attack animation
+    public bool WeaponEquiped       { get; set; }   // Currently equiped weapon
+
+    // Attack Delay
+    bool    startDelayCount;
+    float   delay;
+    [SerializeField] float defaultAttackDelay;
 
     // Stuff
     GameObject firedArrowsGameObject;
@@ -23,9 +25,9 @@ public class PlayerActions : MonoBehaviour
 
     // Components
     Animator anim;
+    PlayerInventory inventory;
+    PlayerControls controls;
     
-
-    // Start is called before the first frame update
     private void Awake()
     {
         firedArrowsGameObject = new GameObject();
@@ -35,60 +37,111 @@ public class PlayerActions : MonoBehaviour
     private void Start()
     {
         anim = GetComponent<Animator>();
+        inventory = GetComponent<PlayerInventory>();
+        controls = GetComponent<PlayerControls>();
         
-        WeaponEquiped = true;
+        WeaponEquiped = false;
+        delay = defaultAttackDelay;
     }
 
 
     private void Update()
     {
-        Controls();
         Animations();
-        FireBow();
+        Fire();
     }
 
-    private void FireBow()
+    private void Fire()
     {
-        // bow pull animation end
-        if (bowMaxPull)
-        {   // press fire 1
-            if (fireBowKeyPressed)
-            {
-                fire = true;
+
+        if (inventory.BowEquiped)
+        {
+            // Weapon ready to fire
+            if (controls.WeaponReady)
+            {   // Press Fire
+                if (controls.FireWeaponKeyPressed)
+                {
+                    if (HasAmmunitionCheck() > 0)
+                    {
+                        // Attacks and sets delay
+                        Attack = true;
+                        startDelayCount = true;
+                    }
+                }
             }
+        }
+
+        
+
+        // AttackDelay
+        if (startDelayCount)
+        {
+            delay -= Time.deltaTime;
+        }
+        if (delay <= 0)
+        {
+            startDelayCount = false;
+            delay = defaultAttackDelay;
         }
     }
 
-    private void Controls()
+    // Checks how many arrows there are on inventory
+    public byte HasAmmunitionCheck()
     {
-        AimHoldKeyPressed = Input.GetButton("Fire2");
-        if (Input.GetButtonUp("Fire2")) bowMaxPull = false;
-        fireBowKeyPressed = Input.GetButtonUp("Fire1");;
+        byte ammunitionCount = 0;
+        foreach (IInventoryItem item in inventory.inventory)
+        {
+            if (item.ItemName == ItemList.arrow)
+            {
+                ammunitionCount++;
+            }
+        }
+        return ammunitionCount;
     }
+
 
     private void Animations()
     {
-        anim.SetBool("AimingBow", AimHoldKeyPressed);
-        anim.SetBool("FireBow", fire);
+        anim.SetFloat("AttackDelay", delay);
+        anim.SetBool("PrepareWeapon", controls.AimHoldKeyPressed);
+        anim.SetBool("Attack", Attack);
+        anim.SetInteger("HasAmmunition", HasAmmunitionCheck());
     }
 
-    public void BowMaxPullTrueOnAnimation()
+    // Controls weapon ready to fire with animation event
+    public void WeaponReadyTrueOnAnimation()
     {
-        bowMaxPull = true;
+        controls.WeaponReady = true;
     }
-    public void BowMaxPullFalseOnAnimation()
+    // Controls weapon ready to fire with animation event
+    public void WeaponReadyFalseOnAnimation()
     {
-        bowMaxPull = false;
+        controls.WeaponReady = false;
     }
-
+    // Controls weapon fire with animation event
     public void FireFalseOnAnimation()
     {
-        fire = false;
+        Attack = false;
     }
-
+    // Controls the instantiation of ammunition with animation event
     public void InstantiateArrowOnAnimation()
     {
         arrowFired = Instantiate(arrowPrefab, transform.position, crosshair.transform.rotation) as GameObject;
+
+        // Removes an arrow
+        int numberOfArrowsRemoved = 0;
+        for (int i = 0; i < inventory.inventory.Count; i++)
+        {
+            if (numberOfArrowsRemoved == 0)
+            {
+                if (inventory.inventory[i].ItemName == ItemList.arrow)
+                {
+                    inventory.inventory.Remove(inventory.inventory[i]);
+                    numberOfArrowsRemoved++;
+                }
+            }
+        }
+
         arrowFired.transform.parent = firedArrowsGameObject.transform;
         arrowFired.GetComponent<Arrow>().Direction = crosshair.transform.position - transform.position;
     }

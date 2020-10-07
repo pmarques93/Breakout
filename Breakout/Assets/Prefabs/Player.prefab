@@ -43,6 +43,9 @@ GameObject:
   - component: {fileID: 6480080491488812839}
   - component: {fileID: 6480080491488812832}
   - component: {fileID: 3754360187872474120}
+  - component: {fileID: 5905566154897928731}
+  - component: {fileID: 8147391551260388833}
+  - component: {fileID: 2393014694659691142}
   - component: {fileID: 6480080491488812838}
   - component: {fileID: 629520502}
   m_Layer: 10
@@ -85,7 +88,7 @@ SpriteRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 10754, guid: 0000000000000000f000000000000000, type: 0}
+  - {fileID: 2100000, guid: a97c105638bdf8b4a8650670310a4cd3, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -167,6 +170,44 @@ MonoBehaviour:
   crosshair: {fileID: 2112463315}
   arrowPrefab: {fileID: 1507784255055337278, guid: 4149a57b09de54d41bdcb73bbc359fc7,
     type: 3}
+  defaultAttackDelay: 0.25
+--- !u!114 &5905566154897928731
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6480080491488812835}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 648c1ff4f57908e4a81add1d65470e4c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!114 &8147391551260388833
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6480080491488812835}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3e08212ca96b41e4e8972642c5882a66, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!114 &2393014694659691142
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6480080491488812835}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1a30de1bb208bc249800984c185e3171, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  enabledControls: 0
 --- !u!95 &6480080491488812838
 Animator:
   serializedVersion: 3

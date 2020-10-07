@@ -2,7 +2,8 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public interface IWeapon
+public interface IWeapon : IInventoryItem
 {
     int Damage { get; set; }
+    int Durability { get; set; }
 }

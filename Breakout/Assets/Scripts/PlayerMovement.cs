@@ -9,48 +9,47 @@ public class PlayerMovement : MonoBehaviour
 
     // Movement
     int movementSpeed;
-    Vector2 movement;
-    bool sprint;
+    
+    // Facing positions
     bool facingRight, facingDown, facingLeft, facingUp;
+    bool enabledMovement;
 
     // Components
     Rigidbody2D rb;
     Animator anim;
     PlayerActions actions;
+    PlayerControls controls;
+    PlayerInventory inventory;
 
     private void Start()
     {
         rb = GetComponent<Rigidbody2D>();
         anim = GetComponent<Animator>();
         actions = GetComponent<PlayerActions>();
+        controls = GetComponent<PlayerControls>();
+        inventory = GetComponent<PlayerInventory>();
 
+        enabledMovement = true;
     }
 
     private void FixedUpdate()
     {
         Movement();
-
     }
 
     private void Update()
     {
-        Controls();
         Animations();
         ControllingSprite();
+        EnabledDisableMovement();
     }
 
-    private void Controls()
-    {
-        movement.x = Input.GetAxisRaw("Horizontal");
-        movement.y = Input.GetAxisRaw("Vertical");
-        sprint = Input.GetButton("Fire3");
-    }
 
     private void Animations()
     {
-        anim.SetFloat("Horizontal", movement.x);
-        anim.SetFloat("Vertical", movement.y);
-        anim.SetFloat("Speed", movement.sqrMagnitude);
+        anim.SetFloat("Horizontal", controls.MovementX);
+        anim.SetFloat("Vertical", controls.MovementY);
+        anim.SetFloat("Speed", new Vector2(controls.MovementX, controls.MovementY).sqrMagnitude);
         anim.SetBool("IdleRight", facingRight);
         anim.SetBool("IdleLeft", facingLeft);
         anim.SetBool("IdleUp", facingUp);
@@ -59,38 +58,40 @@ public class PlayerMovement : MonoBehaviour
 
     private void Movement()
     {
-        if (sprint && actions.AimHoldKeyPressed == false) movementSpeed = 3;
-        else if (actions.AimHoldKeyPressed && actions.WeaponEquiped) movementSpeed = 0;
+        if (controls.Sprint && controls.AimHoldKeyPressed == false) movementSpeed = 3;
+        else if (controls.AimHoldKeyPressed && actions.HasAmmunitionCheck() > 0 && inventory.BowEquiped) movementSpeed = 0;
         else movementSpeed = 2;
 
-        rb.MovePosition(rb.position + (movement).normalized * movementSpeed * Time.fixedDeltaTime);
+        if (enabledMovement)
+            rb.MovePosition(rb.position + new Vector2(controls.MovementX, controls.MovementY).normalized * movementSpeed * Time.fixedDeltaTime);
     }
 
+    // Controls the facing positions
     private void ControllingSprite()
     {
         
-        if (movement.x > 0 && movement.y == 0)
+        if (controls.MovementX > 0 && controls.MovementY == 0)
         {
             facingRight = true;
             facingDown = false;
             facingLeft = false;
             facingUp = false;
         }
-        else if (movement.x < 0 && movement.y == 0)
+        else if (controls.MovementX < 0 && controls.MovementY == 0)
         {
             facingRight = false;
             facingDown = false;
             facingLeft = true;
             facingUp = false;
         }
-        else if (movement.y > 0)
+        else if (controls.MovementY > 0)
         {
             facingRight = false;
             facingDown = false;
             facingLeft = false;
             facingUp = true;
         }
-        else if (movement.y < 0)
+        else if (controls.MovementY < 0)
         {
             facingRight = false;
             facingDown = true;
@@ -99,9 +100,10 @@ public class PlayerMovement : MonoBehaviour
         }
     }
 
-    private void OnDrawGizmos()
+    public void EnabledDisableMovement()
     {
-        Gizmos.color = Color.yellow;
-        Gizmos.DrawLine(transform.position, crosshair.transform.position);
+        if (controls.AimHoldKeyPressed && actions.HasAmmunitionCheck() > 0 && inventory.BowEquiped) enabledMovement = false;
+        else enabledMovement = true;
     }
+
 }
