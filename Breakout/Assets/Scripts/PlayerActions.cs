@@ -12,7 +12,6 @@ public class PlayerActions : MonoBehaviour
 
     // Attack
     public bool Attack              { get; set; }   // Action that starts the attack animation
-    public bool WeaponEquiped       { get; set; }   // Currently equiped weapon
 
     // Attack Delay
     bool    startDelayCount;
@@ -40,7 +39,6 @@ public class PlayerActions : MonoBehaviour
         inventory = GetComponent<PlayerInventory>();
         controls = GetComponent<PlayerControls>();
         
-        WeaponEquiped = false;
         delay = defaultAttackDelay;
     }
 
@@ -70,8 +68,6 @@ public class PlayerActions : MonoBehaviour
                 }
             }
         }
-
-        
 
         // AttackDelay
         if (startDelayCount)

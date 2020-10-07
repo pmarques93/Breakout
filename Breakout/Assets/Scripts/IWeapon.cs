@@ -5,5 +5,4 @@ using UnityEngine;
 public interface IWeapon : IInventoryItem
 {
     int Damage { get; set; }
-    int Durability { get; set; }
 }

@@ -4,6 +4,7 @@ using UnityEngine;
 
 public enum ItemList
 {
+    unarmed,
     dagger,
     bow1,
     bow2,

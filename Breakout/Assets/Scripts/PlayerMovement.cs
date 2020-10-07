@@ -8,11 +8,14 @@ public class PlayerMovement : MonoBehaviour
     [SerializeField] Transform crosshair;
 
     // Movement
-    int movementSpeed;
-    
+    public float movementSpeed { get; set; }
+
     // Facing positions
+    private bool enabledMovement;
     bool facingRight, facingDown, facingLeft, facingUp;
-    bool enabledMovement;
+    
+
+   
 
     // Components
     Rigidbody2D rb;
@@ -41,7 +44,6 @@ public class PlayerMovement : MonoBehaviour
     {
         Animations();
         ControllingSprite();
-        EnabledDisableMovement();
     }
 
 
@@ -58,12 +60,18 @@ public class PlayerMovement : MonoBehaviour
 
     private void Movement()
     {
-        if (controls.Sprint && controls.AimHoldKeyPressed == false) movementSpeed = 3;
-        else if (controls.AimHoldKeyPressed && actions.HasAmmunitionCheck() > 0 && inventory.BowEquiped) movementSpeed = 0;
-        else movementSpeed = 2;
+        // Disables movement if the player is aiming a ranged weapon
+        if (controls.AimHoldKeyPressed && actions.HasAmmunitionCheck() > 0 && inventory.BowEquiped) enabledMovement = false;
+        else enabledMovement = true;
 
         if (enabledMovement)
+        {
+            if (controls.Sprint && controls.AimHoldKeyPressed == false) movementSpeed = 2.2f;
+            else if (controls.AimHoldKeyPressed && actions.HasAmmunitionCheck() > 0 && inventory.BowEquiped) movementSpeed = 0;
+            else movementSpeed = 1.5f;
+
             rb.MovePosition(rb.position + new Vector2(controls.MovementX, controls.MovementY).normalized * movementSpeed * Time.fixedDeltaTime);
+        }
     }
 
     // Controls the facing positions
@@ -99,11 +107,4 @@ public class PlayerMovement : MonoBehaviour
             facingUp = false;
         }
     }
-
-    public void EnabledDisableMovement()
-    {
-        if (controls.AimHoldKeyPressed && actions.HasAmmunitionCheck() > 0 && inventory.BowEquiped) enabledMovement = false;
-        else enabledMovement = true;
-    }
-
 }

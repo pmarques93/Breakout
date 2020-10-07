@@ -5,6 +5,8 @@ TagManager:
   serializedVersion: 2
   tags:
   - ArrowsFiredParent
+  - GlobalLight
+  - PickingItem
   layers:
   - Default
   - TransparentFX
@@ -16,7 +18,7 @@ TagManager:
   - 
   - Arrow
   - StuckArrow
-  - FloorArrow
+  - PickableItems
   - Player
   - Enemy
   - 
