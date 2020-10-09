@@ -13,22 +13,29 @@ public class Zombie : MonoBehaviour
     [SerializeField] Collider2D[] colliders;
     [SerializeField] CircleCollider2D attackCircleCollider;
     [SerializeField] LayerMask playerLayer;
+    [SerializeField] LayerMask targetFindLayer;
 
     // Stuff
-    [Range(0,10)]
+    [Range(0, 10)]
     [SerializeField] int riseChance;
+    bool risingTime;
 
     // Movement
     [SerializeField] float speedOnEditor;
-    float movementSpeed;
+    //float movementSpeed;
     Vector3 direction;
     bool chasing;
+    bool attacking;
 
+    RaycastHit2D targetFoundCollider;
     bool roaming;
-    bool walkingToNewPosition;
     Vector3 roamingCurrentAnchorPoint;
-    Vector3 randomRoamEndPosition;
+    Vector3 agentEndPosition;
     [Range(0, 10)] [SerializeField] float roamingRange;
+    bool reachedEndPosition;
+    bool startCountingDownReachEndPosition;
+    bool checkFinalPosDistance;
+    float timePassedSincePathStarted;
 
     // Facing positions
     bool facingRight, facingDown, facingLeft, facingUp;
@@ -51,15 +58,20 @@ public class Zombie : MonoBehaviour
         agent.updateUpAxis = false;
 
 
-        movementSpeed = speedOnEditor;
         agent.speed = speedOnEditor;
-        chasing = false;
-        roaming = true;
-        walkingToNewPosition = true;
-        roamingCurrentAnchorPoint = transform.position;
 
-        // TESSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSTE
-        randomRoamEndPosition = new Vector3(-2, 2, 0);
+        // ALways starts on roaming mode
+        roaming = true;
+        chasing = false;
+        attacking = false;
+        roamingCurrentAnchorPoint = transform.position;
+        agentEndPosition = roamingCurrentAnchorPoint;
+        reachedEndPosition = false;
+        startCountingDownReachEndPosition = false;
+        checkFinalPosDistance = true;
+        timePassedSincePathStarted = 0;
+
+        agentEndPosition = transform.position + new Vector3(-0.1f, -0.1f, 0);
     }
 
 
@@ -76,6 +88,11 @@ public class Zombie : MonoBehaviour
         {
             // Sets trigger and calls DeadOnAnimation method
             anim.SetTrigger("Die");
+            risingTime = true;
+        }
+        if (risingTime == false)
+        {
+            anim.ResetTrigger("Rise");
         }
     }
 
@@ -89,6 +106,8 @@ public class Zombie : MonoBehaviour
         anim.SetBool("IdleLeft", facingLeft);
         anim.SetBool("IdleUp", facingUp);
         anim.SetBool("IdleDown", facingDown);
+        anim.SetBool("Attack", attacking);
+        anim.SetBool("Rising", risingTime);
     }
 
     // Controls the facing positions
@@ -129,89 +148,142 @@ public class Zombie : MonoBehaviour
         if (player == null) player = FindObjectOfType<PlayerMovement>();
 
 
-        // Raycast in front of the enemy
-        Collider2D playerCollider = Physics2D.OverlapCircle(transform.position, attackCircleCollider.radius, playerLayer);
 
-        if (stats.dead == false)
-        {   // If zombie is in chase mode
-            if (chasing)
-            {
-                if (playerCollider != null)
-                {
-                    agent.enabled = false;
-                }
-                else
-                {
-                    agent.enabled = true;
-
-                }
-            }
-            else if (chasing == false && roaming == false) // If zombie is NOT in chase mode and not in roam mode
-            {
-                agent.enabled = false;
-            }
-
-        }
-        // If zombie is in chase mode
-        if (chasing)
+        // If zombie is not reviving
+        if (risingTime == false)
         {
-            direction = (player.transform.position - transform.position).normalized;
-
-            if (agent.enabled)
+            // know
+            RaycastHit2D inAttackRange = Physics2D.Raycast(new Vector2(transform.position.x, transform.position.y) + attackCircleCollider.offset,
+                                                            player.transform.position - agent.transform.position, attackCircleCollider.radius, playerLayer);
+            // RAYCAST zombie -> zombie
+            targetFoundCollider = Physics2D.Raycast(agent.transform.position, player.transform.position - agent.transform.position, 2f, targetFindLayer);
+            if (targetFoundCollider.collider == player.GetComponent<Collider2D>())
             {
-                agent.SetDestination(player.transform.position);
+                agentEndPosition = targetFoundCollider.transform.position;
+                // Only gets ennabled if player isn't attacking, otherwise chasing gets true AFTER the attack is done ( after on trigger enter 2d)
+                if (attacking == false)
+                {
+                    chasing = true;
+                    roaming = false;
+                }
             }
             else
             {
-                rb.MovePosition(rb.position + new Vector2(direction.x, direction.y) * movementSpeed * Time.fixedDeltaTime);
+                if (agent.enabled)
+                {
+                    if (agent.remainingDistance < 0.01f)
+                    {
+                        chasing = false;
+                        roaming = true;
+                    }
+                }
+            }
+
+            //direction = (agentEndPosition - transform.position).normalized;  // For animation purposes
+
+            // Starts chasing
+            if (chasing)
+            {
+                direction = (agentEndPosition - transform.position).normalized;  // For animation purposes
+
+                roamingCurrentAnchorPoint = transform.position;
+                // Chases until reaches end position (stops and attacks on player intersection)
+                if (inAttackRange.collider == null) // < DOES THIS V  while player is not in range
+                {
+                    agent.enabled = true;
+                    agent.SetDestination(agentEndPosition);
+                }
+            }
+            else if (roaming)
+            {
+                if (agent.enabled)
+                {
+                    if (reachedEndPosition) // reached max position
+                    {
+                        if (startCountingDownReachEndPosition == false)
+                            StartCoroutine(WaitAfterStopping(Random.Range(0.5f, 1)));    // waits x seconds and starts walking again
+                    }
+                    else
+                    {
+                        direction = (agentEndPosition - transform.position).normalized;  // For animation purposes
+                        agent.SetDestination(agentEndPosition);
+
+                        timePassedSincePathStarted += Time.fixedDeltaTime;
+
+                        if (timePassedSincePathStarted > 8.5f)    // If the path is taking too long (if zombie gets stuck somewhere) starts another path
+                            StartCoroutine(WaitAfterStopping(Random.Range(0.5f, 1)));
+
+                        if (checkFinalPosDistance)  // only gets turned on after 0.5 secs on WaitAfterStopping co routine, so it doesn't insta stop after start walking
+                        {
+                            if (agent.remainingDistance < 0.01f) // reached position
+                            {
+                                reachedEndPosition = true;
+                            }
+                        }
+                    }
+                }
             }
         }
-        else if (chasing == false && roaming == false)
+        else
         {
+            agent.speed = 0;
+            roaming = false;
+            chasing = false;
             direction = Vector3.zero;
+            agent.enabled = false;
         }
-        else if (chasing == false && roaming == true)
+    }
+    IEnumerator WaitAfterStopping(float x)
+    {
+        // sets speed to 0, disables agent and stops running another coroutine
+        checkFinalPosDistance = false;
+        startCountingDownReachEndPosition = true;
+        agent.speed = 0;
+        direction = Vector3.zero;
+        agent.enabled = false;
+
+        yield return new WaitForSeconds(x);
+
+        // turns everything back to normal and gives a new position inside the walking range
+        timePassedSincePathStarted = 0f;
+        agent.speed = speedOnEditor;
+        agent.enabled = true;
+        reachedEndPosition = false;
+        startCountingDownReachEndPosition = false;
+        // new Position inside range circle
+
+        agentEndPosition = roamingCurrentAnchorPoint + new Vector3(Random.Range(-roamingRange, roamingRange), Random.Range(-roamingRange, roamingRange), 0f);
+        // If the path has an obstacle, finds runs the coroutine again and finds another path
+        RaycastHit2D checkEndPosition = Physics2D.Raycast(transform.position, agentEndPosition - transform.position, (agentEndPosition - transform.position).magnitude, targetFindLayer);
+        if (checkEndPosition.collider != null)
         {
-            direction = (randomRoamEndPosition).normalized;
-
-            agent.enabled = true;
-            
-            if (walkingToNewPosition)
-            {
-                agent.SetDestination(randomRoamEndPosition);
-            }
-
-            if (transform.position == randomRoamEndPosition)
-            {
-                agent.speed = 0;
-            }
-
+            StopAllCoroutines();
+            StartCoroutine(WaitAfterStopping(0.05f));
         }
-    }    
+
+        // After 0.5 seconds turn checkFinaPositionDistance to true, so it can start checking it reached the end position or not
+        yield return new WaitForSeconds(0.5f);
+        checkFinalPosDistance = true;
+    }
+
 
     private void OnCollisionEnter2D(Collision2D collision)
     {
+        // If gets hit by arrow etc
         if (collision.gameObject.layer == 8)
         {
-            StopAllCoroutines();
             StartCoroutine(GetHit());
         }
     }
 
     IEnumerator GetHit()
     {
-        movementSpeed = speedOnEditor / 5f;
+        agent.speed = speedOnEditor / 2f;
         GetComponent<SpriteRenderer>().color = Color.red;
         yield return new WaitForSeconds(0.1f);
         GetComponent<SpriteRenderer>().color = Color.white;
-        yield return new WaitForSeconds(0.5f);
-        movementSpeed = speedOnEditor / 2.5f;
-        yield return new WaitForSeconds(0.3f);
-        movementSpeed = speedOnEditor / 1.7f;
-        yield return new WaitForSeconds(0.3f);
-        movementSpeed = speedOnEditor / 1.2f;
-        yield return new WaitForSeconds(0.3f);
-        movementSpeed = speedOnEditor;
+        yield return new WaitForSeconds(1.4f);
+        agent.speed = speedOnEditor;
     }
 
 
@@ -234,8 +306,11 @@ public class Zombie : MonoBehaviour
         if (collision.gameObject.layer == 11)
         {
             // Stops chasing and attacks
+            agent.enabled = false;
+            direction = Vector3.zero;
+            agent.speed = 0;
             chasing = false;
-            anim.SetTrigger("Attack");
+            attacking = true;
             // chasing is turned to true on animation with ChasingTrueOnAnimationEvent()
         }
     }
@@ -243,7 +318,9 @@ public class Zombie : MonoBehaviour
     // Turns chasing to true after atacking on animation
     void ChasingTrueOnAnimationEvent()
     {
+        agent.speed = speedOnEditor;
         chasing = true;
+        attacking = false;
     }
 
     // Triggers hit on animation
@@ -262,23 +339,21 @@ public class Zombie : MonoBehaviour
     // stops chasing, disables colliders and sets a chance to Rise the zombie back
     void DeadOnAnimation()
     {
-        agent.enabled = false;
-        chasing = false;
         GetComponent<SpriteRenderer>().sortingOrder = 0;
         foreach (Collider2D col in colliders)
         {
             col.enabled = false;
         }
 
-        if (Random.Range(0,10) < riseChance)
+        if (Random.Range(0, 10) < riseChance)
         {
             StartCoroutine(Rise());
         }
     }
-    // Brings the zombie back to life with 1/3 hp after 7/14 secs
+    // Brings the zombie back to life with 1/3 hp after 2/4 secs
     IEnumerator Rise()
     {
-        yield return new WaitForSeconds(Random.Range(7f,14f));
+        yield return new WaitForSeconds(Random.Range(2, 4));
         anim.ResetTrigger("Die");
         stats.Rise(); // Brings the zombie back to life with 1/3 hp
         anim.SetTrigger("Rise");
@@ -292,24 +367,32 @@ public class Zombie : MonoBehaviour
         {
             col.enabled = true;
         }
-        anim.ResetTrigger("Rise");
-
-        chasing = true;
+        if (targetFoundCollider.collider == player.GetComponent<Collider2D>())
+        {
+            agent.speed = speedOnEditor;
+            chasing = true;
+        }
+        else
+        { 
+            StartCoroutine(WaitAfterStopping(1)); 
+        }
+            
+        risingTime = false;
     }
-
-
-
-
 
 
 
     private void OnDrawGizmosSelected()
     {
         Gizmos.color = Color.red;
-        Gizmos.DrawWireSphere(new Vector2(attackCircleCollider.transform.position.x, attackCircleCollider.transform.position.y) + attackCircleCollider.offset, attackCircleCollider.radius + 0.04f);
+        Gizmos.DrawWireSphere(transform.position, 2f);
 
-        Gizmos.DrawWireSphere(roamingCurrentAnchorPoint, roamingRange);
+        Gizmos.DrawLine(transform.position, agentEndPosition);
 
         Gizmos.color = Color.blue;
+        Gizmos.DrawWireSphere(roamingCurrentAnchorPoint, roamingRange);
+
+        Gizmos.DrawLine(transform.position, roamingCurrentAnchorPoint);
+
     }
 }
