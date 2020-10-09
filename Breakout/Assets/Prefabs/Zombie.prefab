@@ -150,8 +150,13 @@ MonoBehaviour:
   playerLayer:
     serializedVersion: 2
     m_Bits: 2048
-  riseChance: 10
+  targetFindLayer:
+    serializedVersion: 2
+    m_Bits: 10240
+  riseChance: 5
   speedOnEditor: 0.5
+  roamingRange: 2
+  zombieAttackRange: 0
 --- !u!114 &8885500888590505183
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -164,8 +169,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: cbaad3ad55f4e964e8cb6654f02eea75, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  maxHealthInspector: 1
-  damageInspector: 2.87
+  maxHealthInspector: 2
+  damageInspector: 2
 --- !u!58 &5332551595663261976
 CircleCollider2D:
   m_ObjectHideFlags: 0
@@ -213,7 +218,7 @@ CircleCollider2D:
   m_UsedByComposite: 0
   m_Offset: {x: 0, y: -0.06}
   serializedVersion: 2
-  m_Radius: 0.3
+  m_Radius: 0.31
 --- !u!195 &383219434
 NavMeshAgent:
   m_ObjectHideFlags: 0

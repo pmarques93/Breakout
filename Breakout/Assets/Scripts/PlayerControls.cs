@@ -14,7 +14,6 @@ public class PlayerControls : MonoBehaviour
     public bool     WeaponReady             { get; set; }   // Weapon ready to fire
     public bool     FireWeaponKeyPressed    { get; set; }   // Press Fire
 
-
     PlayerInventory inventory; // To check if a bow is equiped
     void Start()
     {
@@ -36,7 +35,11 @@ public class PlayerControls : MonoBehaviour
             MovementX = Input.GetAxisRaw("Horizontal");
             MovementY = Input.GetAxisRaw("Vertical");
             Sprint = Input.GetButton("Fire3");
-            if (inventory.EquipedWeapon.GetType() == typeof(Bow)) AimHoldKeyPressed = Input.GetButton("Fire2");
+
+
+            if (inventory.hasBowEquiped) AimHoldKeyPressed = Input.GetButton("Fire2");
+
+
             if (Input.GetButtonUp("Fire2")) WeaponReady = false;
             FireWeaponKeyPressed = Input.GetButtonUp("Fire1"); ;
         }

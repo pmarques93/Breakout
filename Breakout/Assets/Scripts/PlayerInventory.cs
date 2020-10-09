@@ -16,6 +16,10 @@ public class PlayerInventory : MonoBehaviour
     Sprite pickUpAnimationItemSprite;
     SpriteRenderer pickedObjectSprite;
 
+    // To know if has bow equiped
+    int count;
+    public bool hasBowEquiped { get; set; }
+
     void Start()
     {
         anim = GetComponent<Animator>();
@@ -35,13 +39,7 @@ public class PlayerInventory : MonoBehaviour
     {
         // ----------- STARTING ITEMS ------------------- //
 
-        inventory.Add(new Bow(1));
-        EquipWeapon(ItemList.bow1);
 
-        for (int i = 0; i < 20; i++)
-        {
-            inventory.Add(new Arrow());
-        }
         
 
 
@@ -56,17 +54,31 @@ public class PlayerInventory : MonoBehaviour
         // ----------- EQUIPED GEAR UPDATE ------------- //
         
 
-
+        
 
 
         // --------------------------------------------- //
         if (Input.GetKeyDown(KeyCode.Q)) inventory.Add(new Arrow());
+
+
+        foreach (IInventoryItem item in inventory)
+        {
+            if (item is IWeapon)
+            {
+                if (item.GetType() == typeof(Bow))
+                {
+                    count++;
+                }
+            }
+        }
+        if (count > 0) hasBowEquiped = true;
+        else hasBowEquiped = false;
     }
 
 
     private void Animations()
     {
-        anim.SetBool("BowEquiped", EquipedWeapon.GetType() == typeof(Bow));
+        anim.SetBool("BowEquiped", hasBowEquiped);
     }
 
 
@@ -116,7 +128,8 @@ public class PlayerInventory : MonoBehaviour
                     EquipWeapon(ItemList.bow3);
                     break;
             }
-
+            Debug.Log("You found a " + item.ItemName);
+            
             Destroy(collision.gameObject);
         }
     }

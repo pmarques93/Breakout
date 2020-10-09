@@ -4,8 +4,6 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using UnityEngine.AI;
-using UnityEngine.SceneManagement;
-using UnityEngine.Tilemaps;
 
 public class Zombie : MonoBehaviour
 {
@@ -27,15 +25,17 @@ public class Zombie : MonoBehaviour
     bool chasing;
     bool attacking;
 
-    RaycastHit2D targetFoundCollider;
-    bool roaming;
-    Vector3 roamingCurrentAnchorPoint;
-    Vector3 agentEndPosition;
+    // AI Stuff
+    RaycastHit2D targetFoundCollider;   // collider to search for player
+    bool    roaming;
+    Vector3 roamingCurrentAnchorPoint;  // fixed point from zombie roam
+    Vector3 agentEndPosition;   // the position the zombie is moving towards
     [Range(0, 10)] [SerializeField] float roamingRange;
-    bool reachedEndPosition;
-    bool startCountingDownReachEndPosition;
-    bool checkFinalPosDistance;
-    float timePassedSincePathStarted;
+    bool reachedEndPosition;    // reacheds end pos on path
+    bool startCountingDownReachEndPosition; // used to start coroutine only once, when player reaches the end position on path
+    bool checkFinalPosDistance; // checks if zombie reached final pos
+    float timePassedSincePathStarted;   // gives time since the path started
+    [Range(1, 20)] [SerializeField] float zombieAttackRange;
 
     // Facing positions
     bool facingRight, facingDown, facingLeft, facingUp;
@@ -57,21 +57,21 @@ public class Zombie : MonoBehaviour
         agent.updateRotation = false;
         agent.updateUpAxis = false;
 
-
         agent.speed = speedOnEditor;
 
+
         // ALways starts on roaming mode
-        roaming = true;
-        chasing = false;
-        attacking = false;
-        roamingCurrentAnchorPoint = transform.position;
-        agentEndPosition = roamingCurrentAnchorPoint;
-        reachedEndPosition = false;
-        startCountingDownReachEndPosition = false;
-        checkFinalPosDistance = true;
+        roaming     = true;
+        chasing     = false;
+        attacking   = false;
+        roamingCurrentAnchorPoint   = transform.position;
+        agentEndPosition            = roamingCurrentAnchorPoint;
+        reachedEndPosition                  = false;
+        startCountingDownReachEndPosition   = false;
+        checkFinalPosDistance               = true;
         timePassedSincePathStarted = 0;
 
-        agentEndPosition = transform.position + new Vector3(-0.1f, -0.1f, 0);
+        agentEndPosition = transform.position + new Vector3(-0.1f, -0.1f, 0);   // fixes initial position bug
     }
 
 
@@ -156,7 +156,7 @@ public class Zombie : MonoBehaviour
             RaycastHit2D inAttackRange = Physics2D.Raycast(new Vector2(transform.position.x, transform.position.y) + attackCircleCollider.offset,
                                                             player.transform.position - agent.transform.position, attackCircleCollider.radius, playerLayer);
             // RAYCAST zombie -> zombie
-            targetFoundCollider = Physics2D.Raycast(agent.transform.position, player.transform.position - agent.transform.position, 2f, targetFindLayer);
+            targetFoundCollider = Physics2D.Raycast(agent.transform.position, player.transform.position - agent.transform.position, zombieAttackRange, targetFindLayer);
             if (targetFoundCollider.collider == player.GetComponent<Collider2D>())
             {
                 agentEndPosition = targetFoundCollider.transform.position;
@@ -367,6 +367,7 @@ public class Zombie : MonoBehaviour
         {
             col.enabled = true;
         }
+        // When rises, checks if zombie is in range of the player or not
         if (targetFoundCollider.collider == player.GetComponent<Collider2D>())
         {
             agent.speed = speedOnEditor;
@@ -376,7 +377,6 @@ public class Zombie : MonoBehaviour
         { 
             StartCoroutine(WaitAfterStopping(1)); 
         }
-            
         risingTime = false;
     }
 
@@ -385,7 +385,7 @@ public class Zombie : MonoBehaviour
     private void OnDrawGizmosSelected()
     {
         Gizmos.color = Color.red;
-        Gizmos.DrawWireSphere(transform.position, 2f);
+        Gizmos.DrawWireSphere(transform.position, zombieAttackRange);
 
         Gizmos.DrawLine(transform.position, agentEndPosition);
 

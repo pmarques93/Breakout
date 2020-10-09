@@ -50,7 +50,7 @@ public class PlayerActions : MonoBehaviour
     private void Fire()
     {
         // Checks if it's a ranged weapon
-        if (inventory.EquipedWeapon.GetType() == typeof(Bow))
+        if (inventory.hasBowEquiped)
         {
             // Weapon ready to fire
             if (controls.WeaponReady)
