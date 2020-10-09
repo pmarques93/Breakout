@@ -8,6 +8,7 @@ public class Arrow : MonoBehaviour, IInventoryItem
     // Inspector Stuff
     [SerializeField] Sprite stuckArrowImage;
     [SerializeField] GameObject blowingParticles;
+    [SerializeField] GameObject bloodParticles;
 
     // Arrow "stats"
     public float Speed { get; private set; }
@@ -21,17 +22,14 @@ public class Arrow : MonoBehaviour, IInventoryItem
     Vector3 mySpawnPosition;
 
     // Target and contactpoint
-    ZombieMovement zombie;
-    Vector3 contactPointDifference;
+    Zombie zombie;
     public bool arrowHitObstacle    { get; set; }
-    public bool arrowHitEnemy       { get; set; }
     ContactPoint2D contactPoint;
-
-    
 
     // Components
     Rigidbody2D rb;
     SpriteRenderer spriteRender;
+    PlayerInventory inventory;
 
 
     public Arrow ()
@@ -45,25 +43,20 @@ public class Arrow : MonoBehaviour, IInventoryItem
     {
         rb = GetComponent<Rigidbody2D>();
         spriteRender = GetComponent<SpriteRenderer>();
-        
+        inventory = FindObjectOfType<PlayerInventory>();
     }
 
     private void Start()
     {
         rb.velocity = Direction * Speed;
         arrowHitObstacle = false;
-        arrowHitEnemy = false;
         mySpawnPosition = transform.position;
     }
 
     // Update is called once per frame
     void Update()
     {
-        if (arrowHitEnemy)
-        {
-            transform.position = zombie.transform.position + contactPointDifference;
-        }
-        else if (arrowHitObstacle)
+        if (arrowHitObstacle)
         {
             transform.position = contactPoint.point;
         }
@@ -76,34 +69,36 @@ public class Arrow : MonoBehaviour, IInventoryItem
         if (collision.gameObject.layer == 12)   // enemy
         {
             // Get enemy Rb
-            zombie = collision.gameObject.GetComponent<ZombieMovement>();
-            // Damage the enemy 
-            // or
-            // Critical Chance
+            zombie = collision.gameObject.GetComponent<Zombie>();
 
+            // Damage the enemy 
+            // Criticals if it hits the head (hits both colliders)
+            zombie.stats.TakeDamage(inventory.EquipedWeapon.Damage);
+           
             // Push the enemy
             Vector2 forceDirection = transform.position - mySpawnPosition;
-            rb.AddForce(forceDirection);
+            rb.AddForce(forceDirection * 500f);
 
-            Instantiate(blowingParticles, contactPoint.point, Quaternion.identity);
-
-            arrowHitEnemy = true;
-            contactPointDifference = contactPoint.point - new Vector2(zombie.transform.position.x, zombie.transform.position.y);
+            Instantiate(bloodParticles, contactPoint.point, Quaternion.identity);
+            GetComponent<CapsuleCollider2D>().isTrigger = true;
+            Destroy(gameObject);
         }
-        
+
+        else
+        {
             spriteRender.sprite = stuckArrowImage;
             rb.velocity = Vector3.zero;
             GetComponent<CapsuleCollider2D>().isTrigger = true;
             arrowHitObstacle = true;
             gameObject.layer = 9;
-        
+        }
     }
 
     private void OnTriggerEnter2D(Collider2D collision)
     {
         if (collision.gameObject.layer == 9)
         {
-            if (collision.GetComponent<Arrow>().arrowHitObstacle) // || collision.GetComponent<Arrow>().arrowHitEnemy
+            if (collision.GetComponent<Arrow>().arrowHitObstacle)
             {
                 Instantiate(blowingParticles, collision.transform.position, Quaternion.identity);
                 Destroy(collision.gameObject);

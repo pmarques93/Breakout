@@ -11,7 +11,7 @@ public class Bow : MonoBehaviour , IWeapon
     [Range(1,3)]
     [SerializeField] int damage;
 
-    public int          Damage      { get; set; }
+    public int Damage { get; set; } = 1;
     public ItemList     ItemName    { get; set; }
 
     private void Awake()    // When the game starts
@@ -34,6 +34,7 @@ public class Bow : MonoBehaviour , IWeapon
 
     public Bow(int newDamage) // When the player gets the bow
     {
+        Damage = newDamage;
         switch (newDamage)
         {
             case 1:

@@ -36,7 +36,7 @@ public class PlayerControls : MonoBehaviour
             MovementX = Input.GetAxisRaw("Horizontal");
             MovementY = Input.GetAxisRaw("Vertical");
             Sprint = Input.GetButton("Fire3");
-            if (inventory.BowEquiped) AimHoldKeyPressed = Input.GetButton("Fire2");
+            if (inventory.EquipedWeapon.GetType() == typeof(Bow)) AimHoldKeyPressed = Input.GetButton("Fire2");
             if (Input.GetButtonUp("Fire2")) WeaponReady = false;
             FireWeaponKeyPressed = Input.GetButtonUp("Fire1"); ;
         }
@@ -51,8 +51,12 @@ public class PlayerControls : MonoBehaviour
         }
     }
 
-    public static void EnableDisableControls()
+    public static void DisableControls()
     {
-        enabledControls = !enabledControls;
+        enabledControls = false;
+    }
+    public static void EnableControls()
+    {
+        enabledControls = true;
     }
 }

@@ -9,11 +9,8 @@ public class PlayerInventory : MonoBehaviour
     // Components
     Animator anim;
 
-    // Bools with weapons to control animation
-    public bool BowEquiped      { get; set; }
-    public bool DaggerEquiped   { get; set; }
     // Equipments
-    public static ItemList EquipedWeapon { get; set; }
+    public IWeapon EquipedWeapon { get; set; }
 
     // Picking item animation
     Sprite pickUpAnimationItemSprite;
@@ -37,18 +34,15 @@ public class PlayerInventory : MonoBehaviour
     private void StartingGear()
     {
         // ----------- STARTING ITEMS ------------------- //
-        BowEquiped      = false;
-        DaggerEquiped   = false;
-        EquipedWeapon = ItemList.unarmed;
-
 
         inventory.Add(new Bow(1));
         EquipWeapon(ItemList.bow1);
-        inventory.Add(new Arrow());
-        inventory.Add(new Arrow());
-        inventory.Add(new Arrow());
-        inventory.Add(new Arrow());
-        inventory.Add(new Arrow());
+
+        for (int i = 0; i < 20; i++)
+        {
+            inventory.Add(new Arrow());
+        }
+        
 
 
 
@@ -72,42 +66,22 @@ public class PlayerInventory : MonoBehaviour
 
     private void Animations()
     {
-        switch(EquipedWeapon)
-        {
-            case ItemList.bow1:
-                BowEquiped      = true;
-                DaggerEquiped   = false;
-                break;
-            case ItemList.bow2:
-                BowEquiped      = true;
-                DaggerEquiped   = false;
-                break;
-            case ItemList.bow3:
-                BowEquiped      = true;
-                DaggerEquiped   = false;
-                break;
-            case ItemList.dagger:
-                BowEquiped      = false;
-                DaggerEquiped   = true;
-                break;
-        }
-
-        anim.SetBool("BowEquiped", BowEquiped);
+        anim.SetBool("BowEquiped", EquipedWeapon.GetType() == typeof(Bow));
     }
 
 
-    public static void EquipWeapon (ItemList name)
+    public void EquipWeapon (ItemList name)
     {
         switch (name)
         {
             case ItemList.bow1:
-                EquipedWeapon = ItemList.bow1;
+                EquipedWeapon = new Bow(1);
                 break;
             case ItemList.bow2:
-                EquipedWeapon = ItemList.bow2;
+                EquipedWeapon = new Bow(2);
                 break;
             case ItemList.bow3:
-                EquipedWeapon = ItemList.bow3;
+                EquipedWeapon = new Bow(3);
                 break;
         }
     }
@@ -152,7 +126,7 @@ public class PlayerInventory : MonoBehaviour
     {
         if (collision.gameObject.layer == 9)
         {
-            if (collision.GetComponent<Arrow>().arrowHitObstacle || collision.GetComponent<Arrow>().arrowHitEnemy)
+            if (collision.GetComponent<Arrow>().arrowHitObstacle)
             {
                 inventory.Add(collision.GetComponent<Arrow>());
                 Destroy(collision.gameObject);
@@ -164,9 +138,10 @@ public class PlayerInventory : MonoBehaviour
     {
         GameObject globalLight = GameObject.FindGameObjectWithTag("GlobalLight");
 
+        anim.updateMode = AnimatorUpdateMode.UnscaledTime;
         Time.timeScale = 0;
         globalLight.SetActive(false);   // turns off lights
-        PlayerControls.EnableDisableControls(); // disable controls
+        PlayerControls.DisableControls(); // disable controls
         pickedObjectSprite.gameObject.SetActive(true);
         pickedObjectSprite.sprite = pickUpAnimationItemSprite; // gives sprite
         anim.SetTrigger("PickUpAnimation");
@@ -174,8 +149,9 @@ public class PlayerInventory : MonoBehaviour
         yield return new WaitForSecondsRealtime(4f);
 
         Time.timeScale = 1;
+        anim.updateMode = AnimatorUpdateMode.Normal;
         globalLight.SetActive(true);
-        PlayerControls.EnableDisableControls();
+        PlayerControls.EnableControls();
         pickedObjectSprite.gameObject.SetActive(false);
     }
 }

@@ -2,17 +2,27 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class PlayerStats : MonoBehaviour
+public class PlayerStats : StatsBase
 {
-    // Start is called before the first frame update
+    Animator anim;
     void Start()
     {
-        
+        anim = GetComponent<Animator>();
+
+        health = 6f;
+        maxHealth = 6f;
+        damage = 0f;
+        dead = false;
     }
 
-    // Update is called once per frame
-    void Update()
+    private void Update()
     {
-        
+        if (dead)
+        {
+            PlayerControls.DisableControls();
+            GetComponent<CapsuleCollider2D>().enabled = false;
+            GetComponent<SpriteRenderer>().sortingOrder = 0;
+            anim.SetBool("Dead", dead);
+        }
     }
 }

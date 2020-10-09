@@ -49,8 +49,8 @@ public class PlayerActions : MonoBehaviour
 
     private void Fire()
     {
-
-        if (inventory.BowEquiped)
+        // Checks if it's a ranged weapon
+        if (inventory.EquipedWeapon.GetType() == typeof(Bow))
         {
             // Weapon ready to fire
             if (controls.WeaponReady)
@@ -75,6 +75,7 @@ public class PlayerActions : MonoBehaviour
         if (delay <= 0)
         {
             startDelayCount = false;
+            anim.ResetTrigger("Attack");
             delay = defaultAttackDelay;
         }
     }
