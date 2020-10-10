@@ -6,25 +6,34 @@ public class PlayerInventory : MonoBehaviour
 {
     public List<IInventoryItem> inventory = new List<IInventoryItem>();
 
-    // Components
-    Animator anim;
+    // Inventory menu
+    public bool showInventory { get; set; }
+
+    [SerializeField] GameObject[] inventoryMenusToHide;
+
 
     // Equipments
     public IWeapon EquipedWeapon { get; set; }
 
     // Picking item animation
     Sprite pickUpAnimationItemSprite;
-    SpriteRenderer pickedObjectSprite;
+    public SpriteRenderer pickedObjectSprite { get; private set; }
 
     // To know if has bow equiped
     int count;
     public bool hasBowEquiped { get; set; }
+
+    // Components
+    Animator anim;
+    Animator cameraAnim;
+
 
     void Start()
     {
         anim = GetComponent<Animator>();
         pickedObjectSprite = GameObject.FindGameObjectWithTag("PickingItem").GetComponent<SpriteRenderer>();
         pickedObjectSprite.gameObject.SetActive(false);
+        cameraAnim = GameObject.FindGameObjectWithTag("MainVirtualCamera").GetComponent<Animator>();
 
         StartingGear();
     }
@@ -33,15 +42,21 @@ public class PlayerInventory : MonoBehaviour
     {
         Animations();
         EquipedGear();
+        ShowInventory();
     }
 
     private void StartingGear()
     {
         // ----------- STARTING ITEMS ------------------- //
 
-
-        
-
+        //inventory.Add(new Bow(1));
+        //EquipWeapon(ItemList.bow1);
+        inventory.Add(new Arrow());
+        inventory.Add(new Arrow());
+        inventory.Add(new Arrow());
+        inventory.Add(new Arrow());
+        inventory.Add(new Arrow());
+        inventory.Add(new Arrow());
 
 
         // inventory.Add(new something()); example
@@ -52,9 +67,6 @@ public class PlayerInventory : MonoBehaviour
     private void EquipedGear()
     {
         // ----------- EQUIPED GEAR UPDATE ------------- //
-        
-
-        
 
 
         // --------------------------------------------- //
@@ -81,6 +93,13 @@ public class PlayerInventory : MonoBehaviour
         anim.SetBool("BowEquiped", hasBowEquiped);
     }
 
+    void ShowInventory()
+    {
+        if (showInventory)
+        {
+
+        }
+    }
 
     public void EquipWeapon (ItemList name)
     {
@@ -97,6 +116,21 @@ public class PlayerInventory : MonoBehaviour
                 break;
         }
     }
+
+    // Checks how many arrows there are on inventory
+    public byte HasAmmunitionCheck()
+    {
+        byte ammunitionCount = 0;
+        foreach (IInventoryItem item in inventory)
+        {
+            if (item.ItemName == ItemList.arrow)
+            {
+                ammunitionCount++;
+            }
+        }
+        return ammunitionCount;
+    }
+
 
 
     private void OnCollisionEnter2D(Collision2D collision) // Grabs item from floor
@@ -151,20 +185,25 @@ public class PlayerInventory : MonoBehaviour
     {
         GameObject globalLight = GameObject.FindGameObjectWithTag("GlobalLight");
 
+        
         anim.updateMode = AnimatorUpdateMode.UnscaledTime;
-        Time.timeScale = 0;
+        cameraAnim.SetTrigger("ZoomInFromDefault");
+
+        GameManager.GAMEPAUSED = true;
         globalLight.SetActive(false);   // turns off lights
         PlayerControls.DisableControls(); // disable controls
         pickedObjectSprite.gameObject.SetActive(true);
         pickedObjectSprite.sprite = pickUpAnimationItemSprite; // gives sprite
         anim.SetTrigger("PickUpAnimation");
-        
+
         yield return new WaitForSecondsRealtime(4f);
 
-        Time.timeScale = 1;
+        GameManager.GAMEPAUSED = false;
         anim.updateMode = AnimatorUpdateMode.Normal;
+        cameraAnim.SetTrigger("ZoomOutToDefault");
         globalLight.SetActive(true);
         PlayerControls.EnableControls();
         pickedObjectSprite.gameObject.SetActive(false);
+
     }
 }

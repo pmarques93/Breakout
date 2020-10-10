@@ -57,7 +57,7 @@ public class PlayerActions : MonoBehaviour
             {   // Press Fire
                 if (controls.FireWeaponKeyPressed)
                 {
-                    if (HasAmmunitionCheck() > 0)
+                    if (inventory.HasAmmunitionCheck() > 0)
                     {
                         // Attacks and sets delay
                         anim.SetTrigger("Attack");
@@ -80,26 +80,13 @@ public class PlayerActions : MonoBehaviour
         }
     }
 
-    // Checks how many arrows there are on inventory
-    public byte HasAmmunitionCheck()
-    {
-        byte ammunitionCount = 0;
-        foreach (IInventoryItem item in inventory.inventory)
-        {
-            if (item.ItemName == ItemList.arrow)
-            {
-                ammunitionCount++;
-            }
-        }
-        return ammunitionCount;
-    }
 
 
     private void Animations()
     {
         anim.SetFloat("AttackDelay", delay);
         anim.SetBool("PrepareWeapon", controls.AimHoldKeyPressed);
-        anim.SetInteger("HasAmmunition", HasAmmunitionCheck());
+        anim.SetInteger("HasAmmunition", inventory.HasAmmunitionCheck());
     }
 
     // Controls weapon ready to fire with animation event

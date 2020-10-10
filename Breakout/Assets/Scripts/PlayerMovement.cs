@@ -110,12 +110,12 @@ public class PlayerMovement : MonoBehaviour
 
         if (enabledMovement)
         {
-            if (controls.Sprint && controls.AimHoldKeyPressed == false) movementSpeed = 2.2f;
-            else if (controls.AimHoldKeyPressed && actions.HasAmmunitionCheck() > 0 && inventory.EquipedWeapon.GetType() == typeof(Bow)) movementSpeed = 0;
-            else movementSpeed = 1.5f;
+            if (controls.Sprint && controls.AimHoldKeyPressed == false) movementSpeed = 1.75f;
+            else if (controls.AimHoldKeyPressed && inventory.HasAmmunitionCheck() > 0 && inventory.EquipedWeapon.GetType() == typeof(Bow)) movementSpeed = 0;
+            else movementSpeed = 1.25f;
 
             // Disables movement if the player is aiming a ranged weapon
-            if ((controls.AimHoldKeyPressed && actions.HasAmmunitionCheck() > 0 && inventory.EquipedWeapon.GetType() == typeof(Bow)) == false)
+            if ((controls.AimHoldKeyPressed && inventory.HasAmmunitionCheck() > 0 && inventory.EquipedWeapon.GetType() == typeof(Bow)) == false)
             {
                 rb.MovePosition(rb.position + new Vector2(controls.MovementX, controls.MovementY).normalized * movementSpeed * Time.fixedDeltaTime);
             }

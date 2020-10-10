@@ -10,6 +10,7 @@ public class Bow : MonoBehaviour , IWeapon
 
     [Range(1,3)]
     [SerializeField] int damage;
+    [SerializeField] Sprite sprite;
 
     public int Damage { get; set; } = 1;
     public ItemList     ItemName    { get; set; }
@@ -35,6 +36,7 @@ public class Bow : MonoBehaviour , IWeapon
     public Bow(int newDamage) // When the player gets the bow
     {
         Damage = newDamage;
+
         switch (newDamage)
         {
             case 1:

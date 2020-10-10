@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Rendering;
 
 public class PlayerControls : MonoBehaviour
 {
@@ -15,6 +16,7 @@ public class PlayerControls : MonoBehaviour
     public bool     FireWeaponKeyPressed    { get; set; }   // Press Fire
 
     PlayerInventory inventory; // To check if a bow is equiped
+
     void Start()
     {
         inventory = GetComponent<PlayerInventory>();
@@ -25,6 +27,7 @@ public class PlayerControls : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        Cursor.visible = false;
         Controls();
     }
 
@@ -36,12 +39,11 @@ public class PlayerControls : MonoBehaviour
             MovementY = Input.GetAxisRaw("Vertical");
             Sprint = Input.GetButton("Fire3");
 
-
             if (inventory.hasBowEquiped) AimHoldKeyPressed = Input.GetButton("Fire2");
-
-
             if (Input.GetButtonUp("Fire2")) WeaponReady = false;
             FireWeaponKeyPressed = Input.GetButtonUp("Fire1"); ;
+
+            inventory.showInventory = Input.GetKeyDown(KeyCode.E);
         }
         else
         {

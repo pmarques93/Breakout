@@ -10,4 +10,9 @@ public class PickableArrow : MonoBehaviour, IInventoryItem
     {
         ItemName = ItemList.arrow;
     }
+
+    private void Start()
+    {
+        transform.eulerAngles = new Vector3(0, 0, Random.Range(0, 360));
+    }
 }
