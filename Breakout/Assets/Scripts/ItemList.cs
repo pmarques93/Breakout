@@ -10,5 +10,5 @@ public enum ItemList
     bow2,
     bow3,
     arrow,
-    potion
+    healthPotion
 }

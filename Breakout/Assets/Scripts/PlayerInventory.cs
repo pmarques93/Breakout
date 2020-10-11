@@ -6,9 +6,13 @@ public class PlayerInventory : MonoBehaviour
 {
     public List<IInventoryItem> inventory = new List<IInventoryItem>();
 
+    [SerializeField] Sprite[] itemSprites;
+    [SerializeField] Transform[] itemSpritePositions;
+
     // Inventory menu
     public bool showInventory { get; set; }
-
+    int inventorySlotsOccupiedCount;
+    bool filledInventorySlot;
 
     // Equipments
     public IWeapon EquipedWeapon { get; set; }
@@ -18,7 +22,6 @@ public class PlayerInventory : MonoBehaviour
     public SpriteRenderer pickedObjectSprite { get; private set; }
 
     // To know if has bow equiped
-    int count;
     public bool hasBowEquiped { get; set; }
 
     // Components
@@ -35,12 +38,15 @@ public class PlayerInventory : MonoBehaviour
         inventoryAnim = GameObject.FindGameObjectWithTag("InventoryBag").GetComponent<Animator>();
 
         StartingGear();
+        inventorySlotsOccupiedCount = 0;
+        filledInventorySlot = false;
     }
 
     void Update()
     {
         Animations();
         EquipedGear();
+        InventoryBag();
     }
 
     private void StartingGear()
@@ -71,18 +77,32 @@ public class PlayerInventory : MonoBehaviour
         if (Input.GetKeyDown(KeyCode.Q)) inventory.Add(new Arrow());
 
 
-        foreach (IInventoryItem item in inventory)
+        if (EquipedWeapon != null)
         {
-            if (item is IWeapon)
+            if (EquipedWeapon.GetType() == typeof(Bow))
             {
-                if (item.GetType() == typeof(Bow))
-                {
-                    count++;
-                }
+                hasBowEquiped = true;
+            }
+            else
+            {
+                hasBowEquiped = false;
             }
         }
-        if (count > 0) hasBowEquiped = true;
-        else hasBowEquiped = false;
+    }
+
+    void InventoryBag()
+    {
+        if (Input.GetKeyDown("x")) inventorySlotsOccupiedCount--;
+
+        if (inventorySlotsOccupiedCount >= 8)
+        { 
+            filledInventorySlot = true; 
+        }
+        else
+        {
+            filledInventorySlot = false;
+        }
+        Debug.Log(inventorySlotsOccupiedCount);
     }
 
 
@@ -124,10 +144,9 @@ public class PlayerInventory : MonoBehaviour
     }
 
 
-
     private void OnCollisionEnter2D(Collision2D collision) // Grabs item from floor
     {
-        if (collision.gameObject.layer == 10)   // Arrow on the floor layer
+        if (collision.gameObject.layer == 10)   // picable object on the floor layer
         {
             IInventoryItem item = collision.gameObject.GetComponent<IInventoryItem>();
 
@@ -153,10 +172,32 @@ public class PlayerInventory : MonoBehaviour
                     inventory.Add(new Bow(3));
                     EquipWeapon(ItemList.bow3);
                     break;
+                case ItemList.healthPotion:
+
+                    if (filledInventorySlot == false)
+                    {
+                        inventory.Add(new HealthPotion());
+
+                        for (int j = 0; j < 8; j++)
+                        {
+                            if (filledInventorySlot == false)
+                            {
+                                if (itemSpritePositions[j].GetComponent<SpriteRenderer>().sprite == null)
+                                {
+                                    itemSpritePositions[j].GetComponent<SpriteRenderer>().sprite = itemSprites[0];// health pot
+                                    filledInventorySlot = true;
+                                }
+                            }
+                        }
+                        Destroy(collision.gameObject);
+                        inventorySlotsOccupiedCount++;
+                    }
+                    break;
             }
             Debug.Log("You found a " + item.ItemName);
-            
-            Destroy(collision.gameObject);
+
+            if (item.ItemName != ItemList.healthPotion)
+                Destroy(collision.gameObject);
         }
     }
 
