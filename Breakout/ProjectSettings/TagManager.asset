@@ -8,6 +8,7 @@ TagManager:
   - GlobalLight
   - PickingItem
   - MainVirtualCamera
+  - InventoryBag
   layers:
   - Default
   - TransparentFX

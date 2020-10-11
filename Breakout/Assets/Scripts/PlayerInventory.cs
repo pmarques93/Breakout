@@ -24,7 +24,7 @@ public class PlayerInventory : MonoBehaviour
     // Components
     Animator anim;
     Animator cameraAnim;
-
+    public Animator inventoryAnim { get; private set; }
 
     void Start()
     {
@@ -32,6 +32,7 @@ public class PlayerInventory : MonoBehaviour
         pickedObjectSprite = GameObject.FindGameObjectWithTag("PickingItem").GetComponent<SpriteRenderer>();
         pickedObjectSprite.gameObject.SetActive(false);
         cameraAnim = GameObject.FindGameObjectWithTag("MainVirtualCamera").GetComponent<Animator>();
+        inventoryAnim = GameObject.FindGameObjectWithTag("InventoryBag").GetComponent<Animator>();
 
         StartingGear();
     }
@@ -40,7 +41,6 @@ public class PlayerInventory : MonoBehaviour
     {
         Animations();
         EquipedGear();
-        ShowInventory();
     }
 
     private void StartingGear()
@@ -91,13 +91,7 @@ public class PlayerInventory : MonoBehaviour
         anim.SetBool("BowEquiped", hasBowEquiped);
     }
 
-    void ShowInventory()
-    {
-        if (showInventory)
-        {
 
-        }
-    }
 
     public void EquipWeapon (ItemList name)
     {

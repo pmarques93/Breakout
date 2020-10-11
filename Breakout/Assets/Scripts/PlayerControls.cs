@@ -33,6 +33,27 @@ public class PlayerControls : MonoBehaviour
 
     private void Controls()
     {
+        if (inventory.pickedObjectSprite.gameObject.activeSelf == false)
+        {
+            if (Input.GetKeyDown(KeyCode.E))
+            {
+                if (inventory.showInventory == false)
+                {
+                    inventory.inventoryAnim.ResetTrigger("HideInventory");
+                    inventory.inventoryAnim.SetTrigger("ShowInventory");
+                    GameManager.GAMEPAUSED = true;
+                    inventory.showInventory = true;
+                    DisableControls();
+                }
+                else
+                {
+                    inventory.inventoryAnim.ResetTrigger("ShowInventory");
+                    inventory.inventoryAnim.SetTrigger("HideInventory");
+                    StartCoroutine(DisableInventoryAnimation());
+                }
+            }
+        }
+
         if (enabledControls)
         {
             MovementX = Input.GetAxisRaw("Horizontal");
@@ -42,18 +63,24 @@ public class PlayerControls : MonoBehaviour
             if (inventory.hasBowEquiped) AimHoldKeyPressed = Input.GetButton("Fire2");
             if (Input.GetButtonUp("Fire2")) WeaponReady = false;
             FireWeaponKeyPressed = Input.GetButtonUp("Fire1"); ;
-
-            inventory.showInventory = Input.GetKeyDown(KeyCode.E);
         }
         else
         {
-            MovementX               = 0;
-            MovementY               = 0;
-            Sprint                  = false;
-            AimHoldKeyPressed       = false;
-            WeaponReady             = false;
-            FireWeaponKeyPressed    = false;
+            MovementX = 0;
+            MovementY = 0;
+            Sprint = false;
+            AimHoldKeyPressed = false;
+            WeaponReady = false;
+            FireWeaponKeyPressed = false;
         }
+    }
+
+    IEnumerator DisableInventoryAnimation()
+    {
+        yield return new WaitForSecondsRealtime(0.4f);
+        GameManager.GAMEPAUSED = false;
+        inventory.showInventory = false;
+        EnableControls();
     }
 
     public static void DisableControls()

@@ -350,6 +350,7 @@ public class Zombie : MonoBehaviour
             StartCoroutine(Rise());
         }
     }
+
     // Brings the zombie back to life with 1/3 hp after 2/4 secs
     IEnumerator Rise()
     {
