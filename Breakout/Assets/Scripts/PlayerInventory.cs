@@ -9,8 +9,6 @@ public class PlayerInventory : MonoBehaviour
     // Inventory menu
     public bool showInventory { get; set; }
 
-    [SerializeField] GameObject[] inventoryMenusToHide;
-
 
     // Equipments
     public IWeapon EquipedWeapon { get; set; }
@@ -196,11 +194,14 @@ public class PlayerInventory : MonoBehaviour
         pickedObjectSprite.sprite = pickUpAnimationItemSprite; // gives sprite
         anim.SetTrigger("PickUpAnimation");
 
-        yield return new WaitForSecondsRealtime(4f);
+        yield return new WaitForSecondsRealtime(2f);
+        cameraAnim.SetTrigger("ZoomOutToDefault");
+
+
+        yield return new WaitForSecondsRealtime(2f);
 
         GameManager.GAMEPAUSED = false;
         anim.updateMode = AnimatorUpdateMode.Normal;
-        cameraAnim.SetTrigger("ZoomOutToDefault");
         globalLight.SetActive(true);
         PlayerControls.EnableControls();
         pickedObjectSprite.gameObject.SetActive(false);
